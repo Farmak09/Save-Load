@@ -59,13 +59,17 @@ public:
 		return true;
 	}
 
-	// Called at the end of each loop iteration
-	virtual void RealSave() const
-	{}
+	// Called at the end of each loop iteration if saving a file
+	virtual bool RealSave(pugi::xml_node&) const
+	{
+		return true;
+	}
 
-	// Called at the end of each loop iteration
-	virtual void RealLoad()
-	{}
+	// Called at the end of each loop iteration if loading a file
+	virtual bool RealLoad(pugi::xml_node&)
+	{
+		return true;
+	}
 
 	// TODO 2: Create new virtual methods to Load and Save
 

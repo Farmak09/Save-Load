@@ -63,22 +63,25 @@ void j1App::AddModule(j1Module* module)
 bool j1App::Awake()
 {
 	bool ret = LoadConfig();
+	bool dummyRet = LoadSaveFile();
 
 	// self-config
 	title.create(app_config.child("title").child_value());
 	organization.create(app_config.child("organization").child_value());
 
-	if(ret == true)
+	if (ret == true && dummyRet == true)
 	{
 		p2List_item<j1Module*>* item;
 		item = modules.start;
 
-		while(item != NULL && ret == true)
+		while (item != NULL && ret == true)
 		{
 			ret = item->data->Awake(config.child(item->data->name.GetString()));
 			item = item->next;
 		}
 	}
+	else
+		ret = false;
 
 	return ret;
 }
@@ -146,6 +149,22 @@ bool j1App::LoadConfig()
 	return ret;
 }
 
+bool j1App::LoadSaveFile()
+{
+	bool ret = true;
+
+	pugi::xml_parse_result result = save_file.load_file("savegame.xml");
+
+	if (result == NULL)
+	{
+		LOG("Could not load map xml file savegame.xml. pugi error: %s", result.description());
+		ret = false;
+	}
+	else
+		save_node = save_file.child("save");
+
+	return ret;
+}
 
 
 // ---------------------------------------------
@@ -156,8 +175,10 @@ void j1App::PrepareUpdate()
 // ---------------------------------------------
 void j1App::FinishUpdate()
 {
-	App->Save();
-	App->Load();
+	if(want_to_save)
+	App->RealSave();
+	if(want_to_load)
+	App->RealLoad();
 	// TODO 1: This is a good place to call load / Save functions
 }
 
@@ -226,14 +247,46 @@ bool j1App::PostUpdate()
 	return ret;
 }
 
-const void j1App::RealSave()
+const bool j1App::RealSave()
 {
+	bool ret = true;
+	p2List_item<j1Module*>* item;
+	j1Module* pModule = NULL;
 
+	for (item = modules.start; item != NULL && ret == true; item = item->next)
+	{
+		pModule = item->data;
+
+		if (pModule->active == false) {
+			continue;
+		}
+
+		ret = item->data->RealSave(save_node.child(item->data->name.GetString()));
+	}
+	want_to_save = false;
+
+	return ret;
 }
 
-void j1App::RealLoad()
+bool j1App::RealLoad()
 {
+	bool ret = true;
+	p2List_item<j1Module*>* item;
+	j1Module* pModule = NULL;
 
+	for (item = modules.start; item != NULL && ret == true; item = item->next)
+	{
+		pModule = item->data;
+
+		if (pModule->active == false) {
+			continue;
+		}
+
+		ret = item->data->RealLoad(save_node.child(item->data->name.GetString()));
+	}
+	want_to_load = false;
+
+	return ret;
 }
 
 // Called before quitting
@@ -288,7 +341,7 @@ void j1App::Load()
 {
 	want_to_load = true;
 }
-// TODO 3: Create a simulation of the xml file to read 
+
 
 // TODO 4: Create a method to actually load an xml file
 // then call all the modules to load themselves

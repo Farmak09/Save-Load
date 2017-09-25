@@ -45,8 +45,8 @@ public:
 	const char* GetOrganization() const;
 
 	//Load and Save confirmations
-	const void Save();
-	const void Load();
+	void Save();
+	void Load();
 	// TODO 1: Create methods to save and load
 	// that can be called anytime, even if they 
 	// will one execute by the very end of the frame
@@ -56,6 +56,9 @@ private:
 
 	// Load config file
 	bool LoadConfig();
+
+	//Load Save/Load file
+	bool LoadSaveFile();
 
 	// Call modules before each loop iteration
 	void PrepareUpdate();
@@ -73,10 +76,10 @@ private:
 	bool PostUpdate();
 
 	// Saving method
-	const void RealSave();
+	const bool RealSave();
 
 	// Loading method
-	void RealLoad();
+	bool RealLoad();
 
 public:
 
@@ -94,6 +97,8 @@ private:
 	uint				frames;
 	float				dt;
 	pugi::xml_document	config_file;
+	pugi::xml_document	save_file;
+	pugi::xml_node		save_node;
 	pugi::xml_node		config;
 	pugi::xml_node		app_config;
 	int					argc;

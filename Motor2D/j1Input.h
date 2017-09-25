@@ -68,6 +68,16 @@ public:
 	void GetMousePosition(int &x, int &y);
 	void GetMouseMotion(int& x, int& y);
 
+	bool RealSave(pugi::xml_node&) const
+	{
+		return true;
+	}
+
+	bool RealLoad(pugi::xml_node&)
+	{
+		return true;
+	}
+
 private:
 	bool		windowEvents[WE_COUNT];
 	j1KeyState*	keyboard;
